@@ -13,6 +13,47 @@ var createTask = function(taskText, taskDate, taskList) {
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
 
+  // make lists sortable
+  $(".card .list-group").sortable({
+    connectWith: $(".card .list-group"),
+    scroll: false,
+    tolerance: "pointer",
+    helper: "clone",
+    activate: function(event) {
+      console.log("activate", this);
+    },
+    deactivate: function(event) {
+      console.log("deactivate", this);
+    },
+    over: function(event) {
+      console.log("over", event.target);
+    },
+    out: function(event) {
+      console.log("out", event.target);
+    },
+
+    
+    update: function(event) {
+      var tempArr = [];
+
+      $(this).children().each(function() {
+        var text = $(this)
+        .find("p")
+        .text()
+        .trim();
+        
+        var date = $(this)
+        .find("span")
+        .text()
+        .trim();
+
+        tempArr.push({
+          text: text,
+          date: date
+        });
+      });
+        console.log(tempArr);
+    }
 
   // append to ul list on the page
   $("#list-" + taskList).append(taskLi);
