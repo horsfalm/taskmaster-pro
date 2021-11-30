@@ -13,50 +13,8 @@ var createTask = function(taskText, taskDate, taskList) {
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
 
-  // make lists sortable
-  $(".card .list-group").sortable({
-    connectWith: $(".card .list-group"),
-    scroll: false,
-    tolerance: "pointer",
-    helper: "clone",
-    activate: function(event) {
-      console.log("activate", this);
-    },
-    deactivate: function(event) {
-      console.log("deactivate", this);
-    },
-    over: function(event) {
-      console.log("over", event.target);
-    },
-    out: function(event) {
-      console.log("out", event.target);
-    },
-
-    
-    update: function(event) {
-      var tempArr = [];
-
-      $(this).children().each(function() {
-        var text = $(this)
-        .find("p")
-        .text()
-        .trim();
-        
-        var date = $(this)
-        .find("span")
-        .text()
-        .trim();
-
-        tempArr.push({
-          text: text,
-          date: date
-        });
-      });
-        console.log(tempArr);
-    }
-
-  // append to ul list on the page
-  $("#list-" + taskList).append(taskLi);
+// append to ul list on the page
+$("#list-" + taskList).append(taskLi);
 };
 
 var loadTasks = function() {
@@ -85,6 +43,102 @@ var saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 };
 
+  // make lists sortable
+  $(".card .list-group").sortable({
+    connectWith: $(".card .list-group"),
+    scroll: false,
+    tolerance: "pointer",
+    helper: "clone",
+    activate: function(event, ui) {
+      console.log(ui);
+    },
+    deactivate: function(event, ui) {
+      console.log(ui);
+    },
+    over: function(event) {
+      console.log(event);
+    },
+    out: function(event) {
+      console.log(event);
+    },
+
+    
+    update: function() {
+      var tempArr = [];
+
+      $(this).children().each(function() {
+        tempArr.push({
+        text:$(this)
+        .find("p")
+        .text()
+        .trim(),
+        date:$(this)
+        .find("span")
+        .text()
+        .trim()
+      });
+    });
+
+    var arrName = $(this)
+    .attr("id")
+    .replace("list-", "");
+
+    tasks[arrName] = tempArr;
+    saveTasks();
+  },
+  stop: function(event) {
+    $(this).removeClass("dropover");
+  }
+});
+
+$("#trash").droppable({
+  accept: ".card .list-group-item",
+  tolerance: "touch",
+  drop: function(event, ui) {
+    ui.draggable.remove();
+  },
+  over: function(event, ui) {
+    console.log(ui);
+  },
+  out: function(event, ui) {
+    console.log(ui);
+  }
+});
+
+// modal was triggered
+$("#task-form-modal").on("show.bs.modal", function() {
+  // clear values
+  $("#modalTaskDescription, #modalDueDate").val("");
+});
+
+// modal is fully visible
+$("#task-form-modal").on("shown.bs.modal", function() {
+  // highlight textarea
+  $("#modalTaskDescription").trigger("focus");
+});
+
+// save button in modal was clicked
+$("#task-form-modal .btn-primary").click(function() {
+  // get form values
+  var taskText = $("#modalTaskDescription").val();
+  var taskDate = $("#modalDueDate").val();
+
+  if (taskText && taskDate) {
+    createTask(taskText, taskDate, "toDo");
+
+    // close modal
+    $("#task-form-modal").modal("hide");
+
+    // save in tasks array
+    tasks.toDo.push({
+      text: taskText,
+      date: taskDate
+    });
+
+    saveTasks();
+  }
+});
+
 $(".list-group").on("click", "p", function() {
   var text = $(this)
     .text()
@@ -97,7 +151,7 @@ $(".list-group").on("click", "p", function() {
 });
 
 $(".list-group").on("blur", "textarea", function() {
-  // get the textarea's current value/text
+  // get the text area's current value/text
   var text = $(this)
   .val()
   .trim();
@@ -163,39 +217,7 @@ $(".list-group").on("blur", "input[type='text']", function() {
   $(this).replaceWith(taskSpan);
 });
 
-// modal was triggered
-$("#task-form-modal").on("show.bs.modal", function() {
-  // clear values
-  $("#modalTaskDescription, #modalDueDate").val("");
-});
 
-// modal is fully visible
-$("#task-form-modal").on("shown.bs.modal", function() {
-  // highlight textarea
-  $("#modalTaskDescription").trigger("focus");
-});
-
-// save button in modal was clicked
-$("#task-form-modal .btn-primary").click(function() {
-  // get form values
-  var taskText = $("#modalTaskDescription").val();
-  var taskDate = $("#modalDueDate").val();
-
-  if (taskText && taskDate) {
-    createTask(taskText, taskDate, "toDo");
-
-    // close modal
-    $("#task-form-modal").modal("hide");
-
-    // save in tasks array
-    tasks.toDo.push({
-      text: taskText,
-      date: taskDate
-    });
-
-    saveTasks();
-  }
-});
 
 // remove all tasks
 $("#remove-tasks").on("click", function() {
